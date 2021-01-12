@@ -1,8 +1,9 @@
 - name: Create Azure VM
   hosts: localhost
   connection: local
+  gather_facts: false
   tasks:
-    - name: IMPORT LOGIN CREDENTIALS FOR SERVICENOW
+    - name: import public key
       include_vars: "{{lookup('first_found', login_info)}}"
       vars:
         login_info:
@@ -10,25 +11,25 @@
           - 'login_info.yml'
 
     - name: Create resource group
-      azure_rm_resourcegroup:
+      azure.azcollection.azure_rm_resourcegroup:
         name: myResourceGroup
         location: eastus
 
     - name: Create virtual network
-      azure_rm_virtualnetwork:
+      azure.azcollection.azure_rm_virtualnetwork:
         resource_group: myResourceGroup
         name: myVnet
         address_prefixes: "10.0.0.0/16"
 
     - name: Add subnet
-      azure_rm_subnet:
+      azure.azcollection.azure_rm_subnet:
         resource_group: myResourceGroup
         name: mySubnet
         address_prefix: "10.0.1.0/24"
         virtual_network: myVnet
 
     - name: Create public IP address
-      azure_rm_publicipaddress:
+      azure.azcollection.azure_rm_publicipaddress:
         resource_group: myResourceGroup
         allocation_method: Static
         name: myPublicIP
@@ -39,7 +40,7 @@
         msg: "The public IP is {{ output_ip_address.state.ip_address }}"
 
     - name: Create Network Security Group that allows SSH
-      azure_rm_securitygroup:
+      azure.azcollection.azure_rm_securitygroup:
         resource_group: myResourceGroup
         name: myNetworkSecurityGroup
         rules:
@@ -51,7 +52,7 @@
             direction: Inbound
 
     - name: Create virtual network inteface card
-      azure_rm_networkinterface:
+      azure.azcollection.azure_rm_networkinterface:
         resource_group: myResourceGroup
         name: myNIC
         virtual_network: myVnet
@@ -60,9 +61,9 @@
         security_group: myNetworkSecurityGroup
 
     - name: Create VM
-      azure_rm_virtualmachine:
+      azure.azcollection.azure_rm_virtualmachine:
         resource_group: myResourceGroup
-        name: myVM
+        name: RHEL8-ansible
         vm_size: Standard_DS1_v2
         admin_username: azureuser
         ssh_password_enabled: false
@@ -73,5 +74,5 @@
         image:
           offer: RHEL
           publisher: RedHat
-          sku: '7-LVM'
+          sku: '8.1'
           version: latest
