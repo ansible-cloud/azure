@@ -52,7 +52,6 @@
         name: myNIC
         virtual_network: myVnet
         subnet: mySubnet
-        public_ip_name: myPublicIP
         security_group: myNetworkSecurityGroup
       when: survey_public_ip != "True"
 
