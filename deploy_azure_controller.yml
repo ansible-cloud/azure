@@ -21,16 +21,16 @@
         address_prefix: "10.0.1.0/24"
         virtual_network: myVnet
 
-    - name: Create public IP address
-      azure.azcollection.azure_rm_publicipaddress:
-        resource_group: myResourceGroup
-        allocation_method: Static
-        name: myPublicIP
-      register: output_ip_address
+    # - name: Create public IP address
+    #   azure.azcollection.azure_rm_publicipaddress:
+    #     resource_group: myResourceGroup
+    #     allocation_method: Static
+    #     name: myPublicIP
+    #   register: output_ip_address
 
-    - name: Dump public IP for VM which will be created
-      debug:
-        msg: "The public IP is {{ output_ip_address.state.ip_address }}"
+    # - name: Dump public IP for VM which will be created
+    #   debug:
+    #     msg: "The public IP is {{ output_ip_address.state.ip_address }}"
 
     - name: Create Network Security Group that allows SSH
       azure.azcollection.azure_rm_securitygroup:
@@ -50,7 +50,7 @@
         name: myNIC
         virtual_network: myVnet
         subnet: mySubnet
-        public_ip_name: myPublicIP
+        # public_ip_name: myPublicIP
         security_group: myNetworkSecurityGroup
 
     - name: Create VM
