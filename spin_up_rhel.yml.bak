@@ -3,6 +3,13 @@
   connection: local
   gather_facts: false
   tasks:
+    - name: import public key
+      include_vars: "{{lookup('first_found', login_info)}}"
+      vars:
+        login_info:
+          - 'private.yml'
+          - 'login_info.yml'
+
     - name: Create resource group
       azure.azcollection.azure_rm_resourcegroup:
         name: myResourceGroup

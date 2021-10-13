@@ -3,13 +3,6 @@
   connection: local
   gather_facts: false
   tasks:
-    - name: import public key
-      include_vars: "{{lookup('first_found', login_info)}}"
-      vars:
-        login_info:
-          - 'private.yml'
-          - 'login_info.yml'
-
     - name: Create resource group
       azure.azcollection.azure_rm_resourcegroup:
         name: myResourceGroup
@@ -28,16 +21,18 @@
         address_prefix: "10.0.1.0/24"
         virtual_network: myVnet
 
-    # - name: Create public IP address
-    #   azure.azcollection.azure_rm_publicipaddress:
-    #     resource_group: myResourceGroup
-    #     allocation_method: Static
-    #     name: myPublicIP
-    #   register: output_ip_address
+    - name: Create public IP address
+      azure.azcollection.azure_rm_publicipaddress:
+        resource_group: myResourceGroup
+        allocation_method: Static
+        name: myPublicIP
+      register: output_ip_address
+      when: survey_public_ip
 
-    # - name: Dump public IP for VM which will be created
-    #   debug:
-    #     msg: "The public IP is {{ output_ip_address.state.ip_address }}"
+    - name: Dump public IP for VM which will be created
+      debug:
+        msg: "The public IP is {{ output_ip_address.state.ip_address }}"
+      when: survey_public_ip
 
     - name: Create Network Security Group that allows SSH
       azure.azcollection.azure_rm_securitygroup:
@@ -57,8 +52,19 @@
         name: myNIC
         virtual_network: myVnet
         subnet: mySubnet
-        # public_ip_name: myPublicIP
+        public_ip_name: myPublicIP
         security_group: myNetworkSecurityGroup
+      when: not survey_public_ip
+
+    - name: Create virtual network inteface card
+      azure.azcollection.azure_rm_networkinterface:
+        resource_group: myResourceGroup
+        name: myNIC
+        virtual_network: myVnet
+        subnet: mySubnet
+        public_ip_name: myPublicIP
+        security_group: myNetworkSecurityGroup
+      when: survey_public_ip
 
     - name: Create VM
       azure.azcollection.azure_rm_virtualmachine:
