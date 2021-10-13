@@ -27,12 +27,12 @@
         allocation_method: Static
         name: myPublicIP
       register: output_ip_address
-      when: survey_public_ip
+      when: survey_public_ip == "True"
 
     - name: Dump public IP for VM which will be created
       debug:
         msg: "The public IP is {{ output_ip_address.state.ip_address }}"
-      when: survey_public_ip
+      when: survey_public_ip == "True"
 
     - name: Create Network Security Group that allows SSH
       azure.azcollection.azure_rm_securitygroup:
@@ -54,7 +54,7 @@
         subnet: mySubnet
         public_ip_name: myPublicIP
         security_group: myNetworkSecurityGroup
-      when: not survey_public_ip
+      when: survey_public_ip != "True"
 
     - name: Create virtual network inteface card
       azure.azcollection.azure_rm_networkinterface:
@@ -64,7 +64,7 @@
         subnet: mySubnet
         public_ip_name: myPublicIP
         security_group: myNetworkSecurityGroup
-      when: survey_public_ip
+      when: survey_public_ip == "True"
 
     - name: Create VM
       azure.azcollection.azure_rm_virtualmachine:
