@@ -1,4 +1,4 @@
-- name: Destroy RHEL VM Demo Resources
+- name: Destroy Demo Resources
   hosts: localhost
   connection: local
   gather_facts: false
