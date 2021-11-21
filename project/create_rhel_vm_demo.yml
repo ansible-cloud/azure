@@ -1,0 +1,89 @@
+- name: Create Azure VM
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Create resource group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "{{ resource_group_name }}"
+        location: "{{ region }}"
+
+    - name: Create virtual network
+      azure.azcollection.azure_rm_virtualnetwork:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ vnet_name }}"
+        address_prefixes: "{{ vnet_cidr }}"
+
+    - name: Add subnet
+      azure.azcollection.azure_rm_subnet:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ subnet_name }}"
+        address_prefix: "{{ subnet_cidr }}"
+        virtual_network: "{{ vnet_name }}"
+
+    - name: Create public IP address
+      azure.azcollection.azure_rm_publicipaddress:
+        resource_group: "{{ resource_group_name }}"
+        allocation_method: Static
+        name: "{{ rhel_public_ip_name }}"
+      register: output_ip_address
+      when: survey_public_ip == "True"
+
+    - name: Dump public IP for VM which will be created
+      debug:
+        msg: "The public IP is {{ output_ip_address.state.ip_address }}"
+      when: survey_public_ip == "True"
+
+    - name: Create Network Security Group that allows SSH and RDP
+      azure.azcollection.azure_rm_securitygroup:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ network_sec_group_name }}"
+        rules:
+          - name: SSH
+            protocol: Tcp
+            destination_port_range: 22
+            access: Allow
+            priority: 1001
+            direction: Inbound
+          - name: RDP
+            protocol: Tcp
+            destination_port_range: 3389
+            access: Allow
+            priority: 1002
+            direction: Inbound
+
+    - name: Create virtual network interface card
+      azure.azcollection.azure_rm_networkinterface:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ rhel_nic_name }}"
+        virtual_network: "{{ vnet_name }}"
+        subnet: "{{ subnet_name }}"
+        security_group: "{{ network_sec_group_name }}"
+      when: survey_public_ip != "True"
+
+    - name: Create virtual network interface card
+      azure.azcollection.azure_rm_networkinterface:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ rhel_nic_name }}"
+        virtual_network: "{{ vnet_name }}"
+        subnet: "{{ subnet_name }}"
+        public_ip_name: "{{ rhel_public_ip_name }}"
+        security_group: "{{ network_sec_group_name }}"
+      when: survey_public_ip == "True"
+
+    - name: Create VM
+      azure.azcollection.azure_rm_virtualmachine:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ rhel_vm_name }}"
+        vm_size: "{{ rhel_vm_size }}"
+        admin_username: azureuser
+        ssh_password_enabled: false
+        ssh_public_keys:
+          - path: /home/azureuser/.ssh/authorized_keys
+            key_data: "{{ rhel_public_key }}"
+        network_interfaces: "{{ rhel_nic_name }}"
+        image:
+          offer: RHEL
+          publisher: RedHat
+          sku: "8.1"
+          version: latest

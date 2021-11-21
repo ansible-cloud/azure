@@ -1,0 +1,11 @@
+- name: Destroy RHEL VM Demo Resources
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Destroy resource group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "{{ resource_group_name }}"
+        location: "{{ region }}"
+        state: absent
+        force_delete_nonempty: true
