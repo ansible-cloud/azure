@@ -1,0 +1,9 @@
+- name: Create Resource Group
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Create resource group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "{{ resource_group_name }}"
+        location: "{{ region }}"
