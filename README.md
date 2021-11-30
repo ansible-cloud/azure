@@ -15,6 +15,10 @@ You will need to have the following installed and configured on your local host.
 - Python 3.8+
 - Ansible and Ansible Runner
 
+## Azure Tenancy and Subscription
+
+This demo assumes that you have permissions to create, manage, and destroy Azure resources such as Resource Groups, Virtual Machines, Networking, etc.  If you do not have access to a tenancy and subscription with access to those resources, then you will receive errors when attempting to run automation in later steps.
+
 ## Azure CLI
 
 This guide will assume that the Azure CLI is using the default path `$HOME/.azure` as its path.
@@ -109,4 +113,16 @@ changed: [localhost]
 
 If you get authentication errors when the automations run, then you may need to perform the `docker run -it --rm bitnami/azure-cli:latest login` step again to enable a valid session.
 
-You may 
+## Destroying Resources
+
+Once resources are deployed, then you may incur charges in your Azure tenancy.  You may run the `destroy_resource_group.yml` playbook to remove all resources deployed with this demo to ensure that you're only charged for resources while testing.
+
+```bash
+ansible-runner run \
+--process-isolation \
+--process-isolation-executable docker \
+--container-image quay.io/scottharwell/azure-execution-env:0.0.2 \
+--playbook destroy_resource_group.yml \
+--container-volume-mount=$HOME/.azure:/home/runner/.azure \
+./
+```
