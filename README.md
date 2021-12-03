@@ -2,9 +2,10 @@
 
 This repository contains automation playbooks that can be used to test using Ansible with Microsoft Azure.
 
-The directory structure of this project follows [directory conventions for Ansible Runner](https://ansible-runner.readthedocs.io/en/stable/intro/).  Ansible Runner can be used to run playbooks both locally and with execution environments. 
+The directory structure of this project follows [directory conventions for Ansible Runner](https://ansible-runner.readthedocs.io/en/stable/intro/). 
 
-Instructions for this project are written from the perspective of running the automation on your local machine.  However, the project may also be used directly with Ansible Automation Controller.  If you are using the later, then you will use Ansible Automation Controller credentials, job templates, etc. to setup 
+Instructions for this project are written from the perspective of running the automation on your local machine.  However, the project may also be used directly with Ansible Automation Controller.  If you are using the later, then you will use Ansible Automation Controller credentials, job templates, etc. to setup the proper deployment.
+
 # Requirements
 
 ## Applications
@@ -13,7 +14,7 @@ You will need to have the following installed and configured on your local host.
 
 - Podman or Docker
 - Python 3.8+
-- Ansible and Ansible Runner
+- Ansible, Ansible Runner, Ansible Navigator
 
 ## Azure Tenancy and Subscription
 
@@ -38,13 +39,8 @@ If you do not have the Azure CLI installed on your local machine, then we can us
 
 There are a few steps that are required to configure this project.  Follow these steps to enable the automations.
 
-1. Run the following command to create an `env` folder and environment files: `mkdir env; touch env/envvars; touch env/extravars`
-2. Open the `env/envvars` file and add the following text replacing `<PASSWORD>` with a password that you want deployed to a deployed windows server
-```yaml
----
-WINDOWS_PASSWORD: "<PASSWORD>"
-```
-3. Open the `env/extravars` file and add the following text replacing `<SSH-PUBLIC-KEY>` with your ssh public key. This will be the key that you use to ssh into deployed Linux servers.
+1. Run the following command to create an `env` folder and environment files: `mkdir env; touch env/extravars`
+2. Open the `env/extravars` file and add the following text replacing `<SSH-PUBLIC-KEY>` with your ssh public key. This will be the key that you use to ssh into deployed Linux servers.
 ```yaml
 ---
 resource_group_name: "ansible_test"
@@ -70,18 +66,20 @@ win_nic_name: "win_demo_nic"
 
 ## Run Playbooks
 
-Each of the playbooks in this project can now be run using the following command; just be sure to change the name of the YAML file to the name of the file that you want to run.
+Each of the playbooks in this project can now be run using `ansible-navigator` or `ansible-runner`; just be sure to change the name of the YAML file to the name of the file that you want to run and add any required environment variables for the playbook that you need to run.
 
-The following command should be run from the root directory of this project as `ansible-runner` expects the directory convention that has been created.
+### Create a RHEL 8 Linux VM
+
+The following command should be run from the root directory of this project as the example expects certain file paths following ansible runner directory conventions.  The playbook will create a RHEL 8 VM and all of the dependent resources to enable the VM that do not already exist.
 
 ```bash
-ansible-runner run \
---process-isolation \
---process-isolation-executable docker \
---container-image quay.io/scottharwell/azure-execution-env:0.0.2 \
---playbook create_rhel_vm_demo.yml \
---container-volume-mount=$HOME/.azure:/home/runner/.azure \
-./
+ansible-navigator run project/create_rhel_vm_demo.yml -i inventory/hosts \
+--pae false \
+--extra-vars "@env/extravars" \
+--mode stdout \
+--ecmd vim \
+--eei quay.io/scottharwell/azure-execution-env:latest \
+--eev $HOME/.azure:/home/runner/.azure
 ```
 
 Output will be similar to running the playbook locally on your machine, but you have run the playbook in an execution environment!
@@ -111,18 +109,33 @@ changed: [localhost]
 ...
 ```
 
-If you get authentication errors when the automations run, then you may need to perform the `docker run -it --rm bitnami/azure-cli:latest login` step again to enable a valid session.
+If you get authentication errors when the automation runs, then you may need to perform the `docker run -it --rm bitnami/azure-cli:latest login` step again to enable a valid session.
+
+### Create a Windows VM
+
+The following command should be run from the root directory of this project as the example expects certain file paths following ansible runner directory conventions.  The playbook will create a Windows VM and all of the dependent resources to enable the VM that do not already exist.  Be sure to change the `WINDOWS_PASSWORD` environment variable with a temporary password for your Windows VM.  If you intend to keep this server, then be sure to change the password again once your VM is created.
+
+```bash
+ansible-navigator run project/create_rhel_vm_demo.yml -i inventory/hosts \
+--pae false \
+--extra-vars "@env/extravars" \
+--mode stdout \
+--ecmd vim \
+--eei quay.io/scottharwell/azure-execution-env:latest \
+--eev $HOME/.azure:/home/runner/.azure \
+--set-environment-variable WINDOWS_PASSWORD="<CREATE A PASSWORD>"
+```
 
 ## Destroying Resources
 
 Once resources are deployed, then you may incur charges in your Azure tenancy.  You may run the `destroy_resource_group.yml` playbook to remove all resources deployed with this demo to ensure that you're only charged for resources while testing.
 
 ```bash
-ansible-runner run \
---process-isolation \
---process-isolation-executable docker \
---container-image quay.io/scottharwell/azure-execution-env:0.0.2 \
---playbook destroy_resource_group.yml \
---container-volume-mount=$HOME/.azure:/home/runner/.azure \
-./
+ansible-navigator run project/destroy_resource_group.yml -i inventory/hosts \
+--pae false \
+--extra-vars "@env/extravars" \
+--mode stdout \
+--ecmd vim \
+--eei quay.io/scottharwell/azure-execution-env:latest \
+--eev $HOME/.azure:/home/runner/.azure
 ```
