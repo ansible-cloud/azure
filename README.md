@@ -116,7 +116,7 @@ If you get authentication errors when the automation runs, then you may need to 
 The following command should be run from the root directory of this project as the example expects certain file paths following ansible runner directory conventions.  The playbook will create a Windows VM and all of the dependent resources to enable the VM that do not already exist.  Be sure to change the `WINDOWS_PASSWORD` environment variable with a temporary password for your Windows VM.  If you intend to keep this server, then be sure to change the password again once your VM is created.
 
 ```bash
-ansible-navigator run project/create_rhel_vm_demo.yml -i inventory/hosts \
+ansible-navigator run project/create_windows_vm_demo.yml -i inventory/hosts \
 --pae false \
 --extra-vars "@env/extravars" \
 --mode stdout \
