@@ -33,6 +33,24 @@ If you do not have the Azure CLI installed on your local machine, then we can us
 3. Login to Azure with the CLI in the container: `docker run -it --rm -v $HOME/.azure:/.azure bitnami/azure-cli:latest login`
 4. Follow the instructions to login to Azure with your web browser. Once logged in, be sure to wait until the CLI recognizes the login.
 
+## Create a Service Principal
+
+1. Create a service principal for Ansible operations on Azure.
+    - Running the CLI on your host: `az ad sp create-for-rbac --name ansible`
+    - Running the CLI in a container: `docker run -it --rm -v $HOME/.azure:/.azure bitnami/azure-cli:latest ad sp create-for-rbac --name ansible`
+2. Edit a new text file at `$HOME/.azure/credentials`
+3. Paste the following replacing the values with the output of command in step 1.
+
+```plaintext
+[default]
+subscription_id=xxxxxxx-xxxxx-xx-xxxxx
+client_id=xxxxxxx-xxxxx-xx-xxxxx
+secret=xxxxxxx-xxxxx-xx-xxxxx
+tenant=xxxxxxx-xxxxx-xx-xxxxx
+```
+
+4. Save the file and exit.
+
 # Instructions
 
 ## Setup 
