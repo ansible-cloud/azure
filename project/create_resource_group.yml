@@ -1,3 +1,4 @@
+---
 - name: Create Resource Group
   hosts: localhost
   connection: local

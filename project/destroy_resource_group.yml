@@ -1,3 +1,4 @@
+---
 - name: Destroy Demo Resources
   hosts: localhost
   connection: local
