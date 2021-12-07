@@ -30,7 +30,7 @@ If you do not have the Azure CLI installed on your local machine, then we can us
 
 1. Create a directory in your home directory for the Azure configuration: `mkdir $HOME/.azure`
 2. Pull a container with the Azure CLI: `docker pull bitnami/azure-cli:latest`
-3. Login to Azure with the CLI in the container: `docker run -it --rm bitnami/azure-cli:latest login`
+3. Login to Azure with the CLI in the container: `docker run -it --rm -v $HOME/.azure:/.azure bitnami/azure-cli:latest login`
 4. Follow the instructions to login to Azure with your web browser. Once logged in, be sure to wait until the CLI recognizes the login.
 
 # Instructions
