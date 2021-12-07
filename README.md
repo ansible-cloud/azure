@@ -30,8 +30,26 @@ If you do not have the Azure CLI installed on your local machine, then we can us
 
 1. Create a directory in your home directory for the Azure configuration: `mkdir $HOME/.azure`
 2. Pull a container with the Azure CLI: `docker pull bitnami/azure-cli:latest`
-3. Login to Azure with the CLI in the container: `docker run -it --rm bitnami/azure-cli:latest login`
+3. Login to Azure with the CLI in the container: `docker run -it --rm -v $HOME/.azure:/.azure bitnami/azure-cli:latest login`
 4. Follow the instructions to login to Azure with your web browser. Once logged in, be sure to wait until the CLI recognizes the login.
+
+## Create a Service Principal
+
+1. Create a service principal for Ansible operations on Azure.
+    - Running the CLI on your host: `az ad sp create-for-rbac --name ansible`
+    - Running the CLI in a container: `docker run -it --rm -v $HOME/.azure:/.azure bitnami/azure-cli:latest ad sp create-for-rbac --name ansible`
+2. Edit a new text file at `$HOME/.azure/credentials`
+3. Paste the following replacing the values with the output of command in step 1.
+
+```plaintext
+[default]
+subscription_id=xxxxxxx-xxxxx-xx-xxxxx
+client_id=xxxxxxx-xxxxx-xx-xxxxx
+secret=xxxxxxx-xxxxx-xx-xxxxx
+tenant=xxxxxxx-xxxxx-xx-xxxxx
+```
+
+4. Save the file and exit.
 
 # Instructions
 
@@ -116,7 +134,7 @@ If you get authentication errors when the automation runs, then you may need to 
 The following command should be run from the root directory of this project as the example expects certain file paths following ansible runner directory conventions.  The playbook will create a Windows VM and all of the dependent resources to enable the VM that do not already exist.  Be sure to change the `WINDOWS_PASSWORD` environment variable with a temporary password for your Windows VM.  If you intend to keep this server, then be sure to change the password again once your VM is created.
 
 ```bash
-ansible-navigator run project/create_rhel_vm_demo.yml -i inventory/hosts \
+ansible-navigator run project/create_windows_vm_demo.yml -i inventory/hosts \
 --pae false \
 --extra-vars "@env/extravars" \
 --mode stdout \
