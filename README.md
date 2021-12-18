@@ -68,15 +68,20 @@ subnet_cidr: "10.0.1.0/24"
 vnet_name: "demo_vnet"
 subnet_name: "demo_subnet"
 network_sec_group_name: "demo_sec_group"
+rhel_admin_user: "azureuser"
 rhel_public_ip_name: "rhel_demo_ip"
 rhel_nic_name: "rhel_demo_nic"
 rhel_vm_name: "RHEL8-ansible"
 rhel_vm_size: "Standard_DS1_v2"
+rhel_vm_sku: "8.1"
 rhel_public_key: "<SSH-PUBLIC-KEY>"
 
 survey_public_ip: "True"
 
+win_admin_user: "azureuser"
+win_admin_password: "ChangeMeOnStartup12345"
 win_vm_name: "WIN-ansible"
+win_vm_sku: "2022-Datacenter"
 win_vm_size: "Standard_DS1_v2"
 win_public_ip_name: "win_demo_ip"
 win_nic_name: "win_demo_nic"
@@ -131,7 +136,7 @@ If you get authentication errors when the automation runs, then you may need to 
 
 ### Create a Windows VM
 
-The following command should be run from the root directory of this project as the example expects certain file paths following ansible runner directory conventions.  The playbook will create a Windows VM and all of the dependent resources to enable the VM that do not already exist.  Be sure to change the `WINDOWS_PASSWORD` environment variable with a temporary password for your Windows VM.  If you intend to keep this server, then be sure to change the password again once your VM is created.
+The following command should be run from the root directory of this project as the example expects certain file paths following ansible runner directory conventions.  The playbook will create a Windows VM and all of the dependent resources to enable the VM that do not already exist.  If you intend to keep this server, then be sure to change the password once your VM is created.
 
 ```bash
 ansible-navigator run project/create_windows_vm_demo.yml -i inventory/hosts \

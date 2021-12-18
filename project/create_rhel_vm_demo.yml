@@ -77,14 +77,14 @@
         resource_group: "{{ resource_group_name }}"
         name: "{{ rhel_vm_name }}"
         vm_size: "{{ rhel_vm_size }}"
-        admin_username: azureuser
+        admin_username: "{{ rhel_admin_user }}"
         ssh_password_enabled: false
         ssh_public_keys:
-          - path: /home/azureuser/.ssh/authorized_keys
+          - path: "/home/{{ rhel_admin_user }}/.ssh/authorized_keys"
             key_data: "{{ rhel_public_key }}"
         network_interfaces: "{{ rhel_nic_name }}"
         image:
           offer: RHEL
           publisher: RedHat
-          sku: "8.1"
+          sku: "{{ rhel_vm_sku }}"
           version: latest
