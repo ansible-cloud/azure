@@ -65,11 +65,11 @@
         name: "{{ win_vm_name }}"
         os_type: Windows
         vm_size: "{{ win_vm_size }}"
-        admin_username: azureuser
-        admin_password: "{{ lookup('env', 'WINDOWS_PASSWORD') }}"
+        admin_username: "{{ win_admin_user }}"
+        admin_password: "{{ win_admin_password }}"
         network_interfaces: "{{ win_nic_name }}"
         image:
           offer: WindowsServer
           publisher: MicrosoftWindowsServer
-          sku: "2012-R2-Datacenter"
+          sku: "{{ win_vm_sku }}"
           version: latest
