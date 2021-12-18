@@ -145,8 +145,7 @@ ansible-navigator run project/create_windows_vm_demo.yml -i inventory/hosts \
 --mode stdout \
 --ecmd vim \
 --eei quay.io/scottharwell/azure-execution-env:latest \
---eev $HOME/.azure:/home/runner/.azure \
---set-environment-variable WINDOWS_PASSWORD="<CREATE A PASSWORD>"
+--eev $HOME/.azure:/home/runner/.azure
 ```
 
 ## Destroying Resources
