@@ -36,8 +36,8 @@ If you do not have the Azure CLI installed on your local machine, then we can us
 ## Create a Service Principal
 
 1. Create a service principal for Ansible operations on Azure.
-    - Running the CLI on your host: `az ad sp create-for-rbac --name ansible`
-    - Running the CLI in a container: `docker run -it --rm -v $HOME/.azure:/.azure bitnami/azure-cli:latest ad sp create-for-rbac --name ansible`
+    - Running the CLI on your host: `az ad sp create-for-rbac --name ansible --role Contributor`
+    - Running the CLI in a container: `docker run -it --rm -v $HOME/.azure:/.azure bitnami/azure-cli:latest ad sp create-for-rbac --name ansible --role Contributor`
 2. Edit a new text file at `$HOME/.azure/credentials`
 3. Paste the following replacing the values with the output of command in step 1.
 
@@ -145,8 +145,7 @@ ansible-navigator run project/create_windows_vm_demo.yml -i inventory/hosts \
 --mode stdout \
 --ecmd vim \
 --eei quay.io/scottharwell/azure-execution-env:latest \
---eev $HOME/.azure:/home/runner/.azure \
---set-environment-variable WINDOWS_PASSWORD="<CREATE A PASSWORD>"
+--eev $HOME/.azure:/home/runner/.azure
 ```
 
 ## Destroying Resources
