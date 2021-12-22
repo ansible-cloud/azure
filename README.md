@@ -41,7 +41,7 @@ If you do not have the Azure CLI installed on your local machine, then we can us
 2. Edit a new text file at `$HOME/.azure/credentials`
 3. Paste the following replacing the values with the output of command in step 1.
 
-```plaintext
+```ini
 [default]
 subscription_id=xxxxxxx-xxxxx-xx-xxxxx
 client_id=xxxxxxx-xxxxx-xx-xxxxx
@@ -96,11 +96,11 @@ Each of the playbooks in this project can now be run using `ansible-navigator` o
 The following command should be run from the root directory of this project as the example expects certain file paths following ansible runner directory conventions.  The playbook will create a RHEL 8 VM and all of the dependent resources to enable the VM that do not already exist.
 
 ```bash
-ansible-navigator run project/create_rhel_vm_demo.yml -i inventory/hosts \
+ansible-navigator run project/create_rhel_vm_demo.yml \
+-i inventory/hosts \
 --pae false \
 --extra-vars "@env/extravars" \
 --mode stdout \
---ecmd vim \
 --eei quay.io/scottharwell/azure-execution-env:latest \
 --eev $HOME/.azure:/home/runner/.azure
 ```
@@ -132,18 +132,18 @@ changed: [localhost]
 ...
 ```
 
-If you get authentication errors when the automation runs, then you may need to perform the `docker run -it --rm bitnami/azure-cli:latest login` step again to enable a valid session.
+If you get authentication errors when the automation runs, then you may need to ensure that your Service Principal is configured correctly.
 
 ### Create a Windows VM
 
 The following command should be run from the root directory of this project as the example expects certain file paths following ansible runner directory conventions.  The playbook will create a Windows VM and all of the dependent resources to enable the VM that do not already exist.  If you intend to keep this server, then be sure to change the password once your VM is created.
 
 ```bash
-ansible-navigator run project/create_windows_vm_demo.yml -i inventory/hosts \
+ansible-navigator run project/create_windows_vm_demo.yml \
+-i inventory/hosts \
 --pae false \
 --extra-vars "@env/extravars" \
 --mode stdout \
---ecmd vim \
 --eei quay.io/scottharwell/azure-execution-env:latest \
 --eev $HOME/.azure:/home/runner/.azure
 ```
@@ -153,11 +153,11 @@ ansible-navigator run project/create_windows_vm_demo.yml -i inventory/hosts \
 Once resources are deployed, then you may incur charges in your Azure tenancy.  You may run the `destroy_resource_group.yml` playbook to remove all resources deployed with this demo to ensure that you're only charged for resources while testing.
 
 ```bash
-ansible-navigator run project/destroy_resource_group.yml -i inventory/hosts \
+ansible-navigator run project/destroy_resource_group.yml \
+-i inventory/hosts \
 --pae false \
 --extra-vars "@env/extravars" \
 --mode stdout \
---ecmd vim \
 --eei quay.io/scottharwell/azure-execution-env:latest \
 --eev $HOME/.azure:/home/runner/.azure
 ```
