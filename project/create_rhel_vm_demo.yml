@@ -39,7 +39,7 @@
       set_stats:
         data: 
           azure_vm_public_ip: "{{ output_ip_address.state.ip_address }}"
-        data: false
+        per_host: false
       when: survey_public_ip == "True"
 
     - name: Create Network Security Group that allows SSH and RDP
