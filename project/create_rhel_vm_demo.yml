@@ -28,19 +28,19 @@
         allocation_method: Static
         name: "{{ rhel_public_ip_name }}"
       register: output_ip_address
-      when: survey_public_ip == "True"
+      when: survey_public_ip
 
     - name: Dump public IP for VM which will be created
       debug:
         msg: "The public IP is {{ output_ip_address.state.ip_address }}"
-      when: survey_public_ip == "True"
+      when: survey_public_ip
 
     - name: Set Stat for Ansible Controller
       set_stats:
-        data: 
+        data:
           azure_vm_public_ip: "{{ output_ip_address.state.ip_address }}"
         per_host: false
-      when: survey_public_ip == "True"
+      when: survey_public_ip
 
     - name: Create Network Security Group that allows SSH and RDP
       azure.azcollection.azure_rm_securitygroup:
@@ -77,7 +77,7 @@
         subnet: "{{ subnet_name }}"
         public_ip_name: "{{ rhel_public_ip_name }}"
         security_group: "{{ network_sec_group_name }}"
-      when: survey_public_ip == "True"
+      when: survey_public_ip
 
     - name: Create VM
       azure.azcollection.azure_rm_virtualmachine:
