@@ -63,8 +63,8 @@ There are a few steps that are required to configure this project.  Follow these
 ---
 resource_group_name: "ansible_test"
 region: "eastus"
-vnet_cidr: "10.0.0.0/16"
-subnet_cidr: "10.0.1.0/24"
+vnet_cidr: "172.16.1.0/24"
+subnet_cidr: "172.16.1.0/24"
 vnet_name: "demo_vnet"
 subnet_name: "demo_subnet"
 network_sec_group_name: "demo_sec_group"
@@ -72,11 +72,11 @@ rhel_admin_user: "azureuser"
 rhel_public_ip_name: "rhel_demo_ip"
 rhel_nic_name: "rhel_demo_nic"
 rhel_vm_name: "RHEL8-ansible"
-rhel_vm_size: "Standard_DS1_v2"
-rhel_vm_sku: "8.1"
+rhel_vm_size: "Standard_A1_v2"
+rhel_vm_sku: "8_5"
 rhel_public_key: "<SSH-PUBLIC-KEY>"
 
-survey_public_ip: "True"
+survey_public_ip: true
 
 win_admin_user: "azureuser"
 win_admin_password: "ChangeMeOnStartup12345"
