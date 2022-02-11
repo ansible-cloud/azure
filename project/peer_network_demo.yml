@@ -18,6 +18,18 @@
   connection: local
   gather_facts: false
   tasks:
+    - name: Create a route table
+      azure.azcollection.azure_rm_routetable:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ route_table_name }}"
+        disable_bgp_route_propagation: true
+        tags:
+          deployment: ansible
+      register: route_table
+      tags:
+        - network
+        - peering
+        - routes
     - name: Create Hub VNET
       azure.azcollection.azure_rm_virtualnetwork:
         resource_group: "{{ resource_group_name }}"
@@ -125,6 +137,7 @@
         name: "{{ spoke1_subnet_name }}"
         virtual_network_name: "{{ spoke1_vnet.state.name }}"
         address_prefix_cidr: "{{ spoke1_subnet_cidr }}"
+        route_table: "{{ route_table_name }}"
         state: present
       register: spoke1_subnet
       tags:
@@ -155,6 +168,7 @@
         name: "{{ spoke2_subnet_name }}"
         virtual_network_name: "{{ spoke2_vnet.state.name }}"
         address_prefix_cidr: "{{ spoke2_subnet_cidr }}"
+        route_table: "{{ route_table_name }}"
         state: present
       register: spoke2_subnet
       tags:
@@ -250,18 +264,6 @@
       tags:
         - network
         - peering
-    - name: Create a route table
-      azure.azcollection.azure_rm_routetable:
-        resource_group: "{{ resource_group_name }}"
-        name: "{{ route_table_name }}"
-        disable_bgp_route_propagation: false
-        tags:
-          deployment: ansible
-      register: route_table
-      tags:
-        - network
-        - peering
-        - routes
     - name: Create route to spoke 1
       azure.azcollection.azure_rm_route:
         resource_group: "{{ resource_group_name }}"
