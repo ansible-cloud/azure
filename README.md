@@ -192,6 +192,8 @@ This playbook performs the following actions during deployment:
 
 Once the playbook completes, you should be able to SSH into the public VM and route to each of the VMs on spoke VNETs.  Traffic should also route between the two spoke VMs via the virtual gateway with the configured transit routing.
 
+**Note:** _It can take over 30 mins for the VPN virtual gateway to deploy. The entire playbook typically takes about 45 mins to create all resources._
+
 The following are required extra-vars needed to run the playbook.
 
 ```yaml
