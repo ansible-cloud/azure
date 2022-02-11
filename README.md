@@ -87,7 +87,7 @@ win_public_ip_name: "win_demo_ip"
 win_nic_name: "win_demo_nic"
 ```
 
-## Run Playbooks
+## Run Tests
 
 Each of the playbooks in this project can now be run using `ansible-navigator` or `ansible-runner`; just be sure to change the name of the YAML file to the name of the file that you want to run and add any required environment variables for the playbook that you need to run.
 
@@ -152,6 +152,8 @@ ansible-navigator run project/create_windows_vm_demo.yml \
 
 Once resources are deployed, then you may incur charges in your Azure tenancy.  You may run the `destroy_resource_group.yml` playbook to remove all resources deployed with this demo to ensure that you're only charged for resources while testing.
 
+**Note:** _Only run this playbook when you are ready to remove the resources from your Azure subscription if you do not want to have to recreate them in order to test again._
+
 ```bash
 ansible-navigator run project/destroy_resource_group.yml \
 -i inventory/hosts \
@@ -161,3 +163,89 @@ ansible-navigator run project/destroy_resource_group.yml \
 --eei quay.io/scottharwell/azure-execution-env:latest \
 --eev $HOME/.azure:/home/runner/.azure
 ```
+
+## Private Networking
+
+Cloud networking offers organizations many options for connecting multiple cloud networks, on-premises networks, and multi-cloud networks together.  Microsoft provides [informational documentation](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview) and [troubleshooting documentation](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-troubleshoot-peering-issues#configure-virtual-network-peering-between-two-virtual-networks) about VNET peering and the concepts of different types of networking.
+
+Many customers using Ansible on Azure will want to use a hub-and-spoke networking model that allows transit routing to-and-from AAP for access to the applications and for automation to traverse cloud and on-premises networks without the need for a bastion or jump host over the public internet.
+
+![Hub-and-spoke networking diagram](https://docs.microsoft.com/en-us/azure/virtual-network/media/virtual-networks-peering-overview/local-or-remote-gateway-in-peered-virual-network.png)
+
+In the image above, Ansible Automation Platform would sit on one of the spoke VNETs.
+
+The `peer_network_demo.yml` playbook creates a demo deployment of this type of network configuration.  It is intendend to be an example for routing traffic using the hub-and-spoke model.  A production deployment would likely be much more complex and unique per the requirements of your organization.
+
+### Basic Operations
+
+This playbook performs the following actions during deployment:
+
+1. Creates a hub virtual network
+2. Creates two spoke virtual networks
+3. Creates a VPN Virtual Gateway for transit routing in the hub network
+4. Creates a route table that routes the spoke subnets through the virtual gateway
+5. Assigns the route table as the default route table for the spoke networks
+6. Creates a RHEL virtual machine in each of the three VNETs
+   * A VM in the hub VNET with a public IP address
+   * A VM in the spoke 1 VNET with a private IP address
+   * A VM in the spoke 2 VNET with a private IP address
+
+Once the playbook completes, you should be able to SSH into the public VM and route to each of the VMs on spoke VNETs.  Traffic should also route between the two spoke VMs via the virtual gateway with the configured transit routing.
+
+The following are required extra-vars needed to run the playbook.
+
+```yaml
+# Required
+debug: false
+resource_group_name: rg-peering-demo
+region: eastus
+hub_vnet_name: hub-vnet
+hub_vnet_cidr: "172.16.0.0/23"
+hub_subnet_name: hub-subnet
+hub_subnet_cidr: "172.16.0.0/24"
+spoke1_vnet_name: spoke-1-vnet
+spoke1_vnet_cidr: "172.16.2.0/24"
+spoke1_subnet_name: spoke-1-subnet
+spoke1_subnet_cidr: "172.16.2.0/24"
+spoke2_vnet_name: spoke-2-vnet
+spoke2_vnet_cidr: "172.16.3.0/24"
+spoke2_subnet_name: spoke-2-subnet
+spoke2_subnet_cidr: "172.16.3.0/24"
+virtual_gw_name: hub-gateway
+virtual_gw_sku: Basic
+virtual_gw_subnet_cidr: "172.16.1.0/26"
+virtual_gw_vpn_type: route_based
+route_table_name: "hub-and-spoke-route-table"
+ssh_security_group_name: ssh-security-group
+rhel_vm_sku: "8_5"
+vm_size: "Standard_A1_v2"
+vm_username: azureuser
+ssh_pub_key: ""  # Add your RSA SSH public key here
+# Optional
+managed_app_node_pool_rg: ""  # Name of the managed app node pool resource group
+managed_app_vnet_name: ""  # Name of the managed app node pool vnet
+managed_app_cidr: ""  # CIDR of the managed app node pool vnet
+managed_app_route_table: ""  # The route table name for the managed app node pool vnet
+vpn_cidr: ""  # the CIDR range of your local VPN that could also be connected as a spoke to the newly created virtual gateway
+```
+
+### Advanced Operations
+
+#### VPN Setup
+
+This networking configuration sets up most of the Azure requirements to add an external network (on-premises network, other cloud, etc.) via VPN.  There is a extra variable `vpn_cidr` that can be issued during playbook run that will add the VPN CIDR to the route tables.  But, you will need to perform the VPN configuration in the VPN Gateway to your on-prem network directly.
+
+#### Ansible Automation Platform on Azure
+
+If you have Ansible Automation Platform on Azure installed as a managed application, then configuring the optional values above with will configure routing options between the previously created resources and your AAP deployment.  This will update the routing peering and routing table of the managed application to participate in the hub-and-spoke networking, and can be used to automate against hosts on the spoke networks configured in the route table, including on-premesis networks or other clouds.
+
+#### Removing the Network Demo
+
+To remove the resources created in the `peer_network_demo.yml` playbook, you can delete the resource group.  That will destroy all of the resources created.  However, if you peered Ansible Automation Platform on Azure with the network, then the route rules that were added need to be removed manually.
+
+1. Navigate to the route tables section in the Azure console
+2. Select the route table for the managed application
+3. Delete any route rule associated with the demo network
+    * spoke1-route
+    * spoke2-route
+    * vpn-route (if it was configured)
