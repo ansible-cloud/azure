@@ -3,3 +3,7 @@ extends: default
 
 rules:
   line-length: disable
+  comments:
+    require-starting-space: false
+    ignore-shebangs: true
+    min-spaces-from-content: 1
