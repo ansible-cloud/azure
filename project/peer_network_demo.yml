@@ -33,7 +33,7 @@
     - name: Debug Hub VNET
       debug:
         var: hub_vnet
-      when: debug is defined and debug
+      when: debug
     - name: Sleep for 5 seconds so that Azure recognizes the VNET before subnet creation
       wait_for:
         timeout: 5
@@ -61,7 +61,7 @@
     - name: Debug Hub VNET
       debug:
         var: hub_gw_public_ip
-      when: debug is defined and debug
+      when: debug
     - name: Set Stat for Ansible Controller
       set_stats:
         data:
@@ -98,7 +98,7 @@
     - name: Debug Hub Gateway
       debug:
         var: hub_gw
-      when: debug is defined and debug
+      when: debug
     - name: Create Spoke1 VNET
       azure.azcollection.azure_rm_virtualnetwork:
         resource_group: "{{ resource_group_name }}"
@@ -118,7 +118,7 @@
     - name: Debug Spoke1 VNET
       debug:
         var: spoke1_vnet
-      when: debug is defined and debug
+      when: debug
     - name: Create Spoke1 Subnet
       azure.azcollection.azure_rm_subnet:
         resource_group: "{{ resource_group_name }}"
@@ -144,7 +144,7 @@
     - name: Debug Spoke2 VNET
       debug:
         var: spoke2_vnet
-      when: debug is defined and debug
+      when: debug
     - name: Sleep for 5 seconds so that Azure recognizes the VNET before subnet creation
       wait_for:
         timeout: 5
@@ -219,6 +219,131 @@
       tags:
         - network
         - peering
+    - name: Peer hub to managed app
+      azure.azcollection.azure_rm_virtualnetworkpeering:
+        resource_group: "{{ resource_group_name }}"
+        virtual_network: "{{ hub_vnet_name }}"
+        name: hub_TO_managedapp
+        remote_virtual_network:
+          resource_group: "{{ managed_app_node_pool_rg }}"
+          name: "{{ managed_app_vnet_name }}"
+        allow_virtual_network_access: true
+        allow_forwarded_traffic: true
+        allow_gateway_transit: true
+        use_remote_gateways: false
+      when: managed_app_node_pool_rg != "" and managed_app_vnet_name != ""
+      tags:
+        - network
+        - peering
+    - name: Peer managed app to hub
+      azure.azcollection.azure_rm_virtualnetworkpeering:
+        resource_group: "{{ managed_app_node_pool_rg }}"
+        virtual_network: "{{ managed_app_vnet_name }}"
+        name: managedapp_TO_hub
+        remote_virtual_network:
+          resource_group: "{{ resource_group_name }}"
+          name: "{{ hub_vnet_name }}"
+        allow_virtual_network_access: true
+        allow_forwarded_traffic: true
+        allow_gateway_transit: true
+        use_remote_gateways: true
+      tags:
+        - network
+        - peering
+    - name: Create a route table
+      azure.azcollection.azure_rm_routetable:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ route_table_name }}"
+        disable_bgp_route_propagation: false
+        tags:
+          deployment: ansible
+      register: route_table
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Create route to spoke 1
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ spoke1_vnet_name }}-route"
+        address_prefix: "{{ spoke1_vnet_cidr }}"
+        next_hop_type: virtual_network_gateway
+        route_table_name: "{{ route_table_name }}"
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Create route to spoke 2
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ spoke2_vnet_name }}-route"
+        address_prefix: "{{ spoke2_vnet_cidr }}"
+        next_hop_type: virtual_network_gateway
+        route_table_name: "{{ route_table_name }}"
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Create route to VPN
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ resource_group_name }}"
+        name: "vpn-route"
+        address_prefix: "{{ vpn_cidr }}"
+        next_hop_type: virtual_network_gateway
+        route_table_name: "{{ route_table_name }}"
+      when: vpn_cidr != ""
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Create gateway route to managed app
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ resource_group_name }}"
+        name: "managed-app-route"
+        address_prefix: "{{ managed_app_cidr }}"
+        next_hop_type: virtual_network_gateway
+        route_table_name: "{{ route_table_name }}"
+      when: managed_app_cidr != ""
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Create route from managed app to spoke 1
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ managed_app_node_pool_rg }}"
+        name: "spoke1-route"
+        address_prefix: "{{ spoke1_vnet_cidr }}"
+        next_hop_type: virtual_network_gateway
+        route_table_name: "{{ managed_app_route_table }}"
+      when: managed_app_node_pool_rg != "" and managed_app_cidr != "" and managed_app_route_table != ""
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Create route from managed app to spoke 2
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ managed_app_node_pool_rg }}"
+        name: "spoke2-route"
+        address_prefix: "{{ spoke2_vnet_cidr }}"
+        next_hop_type: virtual_network_gateway
+        route_table_name: "{{ managed_app_route_table }}"
+      when: managed_app_node_pool_rg != "" and managed_app_cidr != "" and managed_app_route_table != ""
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Create route from managed app to vpn
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ managed_app_node_pool_rg }}"
+        name: "vpn-route"
+        address_prefix: "{{ vpn_cidr }}"
+        next_hop_type: virtual_network_gateway
+        route_table_name: "{{ managed_app_route_table }}"
+      when: managed_app_node_pool_rg != "" and managed_app_cidr != "" and managed_app_route_table != "" and vpn_cidr != ""
+      tags:
+        - network
+        - peering
+        - routes
     - name: Create Network Security Group that allows SSH
       azure.azcollection.azure_rm_securitygroup:
         resource_group: "{{ resource_group_name }}"
@@ -251,7 +376,7 @@
     - name: Dump public IP for VM which will be created
       debug:
         msg: "Hub VM IP address: {{ hub_vm_public_ip.state.ip_address }}"
-      when: debug is defined and debug
+      when: debug
       tags:
         - vm
         - hub
@@ -318,7 +443,7 @@
     - name: Dump IP for VM which will be created
       debug:
         msg: "Spoke 1 VM IP Address: {{ spoke1_vnic.state.ip_configuration.private_ip_address }}"
-      when: debug is defined and debug
+      when: debug
       tags:
         - vm
         - spoke1
@@ -371,7 +496,7 @@
     - name: Dump IP for VM which will be created
       debug:
         msg: "Spoke 2 VM IP Address: {{ spoke2_vnic.state.ip_configuration.private_ip_address }}"
-      when: debug is defined and debug
+      when: debug
       tags:
         - vm
         - spoke2
