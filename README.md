@@ -1,3 +1,5 @@
+![Linting Status](https://github.com/scottharwell/ansible-azure-demo/actions/workflows/on-push.yml/badge.svg)
+
 # Ansible Azure Demo
 
 This repository contains automation playbooks that can be used to test using Ansible with Microsoft Azure.  This repository and the examples within are not supported by Red Hat and are for example purposes only.
