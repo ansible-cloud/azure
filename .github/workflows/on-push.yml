@@ -1,5 +1,5 @@
 ---
-name: on-push-actions
+name: validation-checks
 on: [push]
 jobs:
   lint-check:
