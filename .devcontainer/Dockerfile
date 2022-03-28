@@ -20,7 +20,7 @@ USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 
 # Update path at build time
-ENV PATH="${PATH}:/home/${USERNAME}/.local/bin:/home/${USERNAME}/.dotnet/tools" 
+ENV PATH="${PATH}:/home/${USERNAME}/.local/bin" 
 
 # Ensure PIP is upgraded and install packages
 RUN echo "export PATH=\"$PATH:/home/${USERNAME}/.local/bin\"" >> /home/${USERNAME}/.bash_profile
