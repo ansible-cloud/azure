@@ -1,4 +1,4 @@
-![Linting Status](https://github.com/scottharwell/ansible-azure-demo/actions/workflows/on-push.yml/badge.svg)
+![Validation Checks](https://github.com/ansible-cloud/azure/actions/workflows/on-push.yml/badge.svg)
 
 # Ansible Azure Demo
 
