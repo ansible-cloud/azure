@@ -3,11 +3,16 @@
         "dockerfile": "Dockerfile"
     },
     "extensions": [
+        "ms-vscode.azurecli",
+        "ms-vscode.azure-account",
+        "ms-azuretools.vscode-docker",
+        "ms-python.pylint",
+        "ms-python.python",
         "redhat.ansible",
-        "richie5um2.vscode-sort-json",
-        "zainchen.json",
-        "ms-vscode.vscode-node-azure-pack",
-        "ms-vscode.azure-account"
+        "redhat.vscode-yaml",
+        "j4ng5y.charactercount",
+        "ZainChen.json",
+        "eamodio.gitlens"
     ],
     "forwardPorts": [],
     "mounts": [
