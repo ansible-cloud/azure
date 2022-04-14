@@ -67,7 +67,7 @@
         virtual_network: "{{ vnet_name }}"
         subnet: "{{ subnet_name }}"
         security_group: "{{ network_sec_group_name }}"
-      when: survey_public_ip != "True"
+      when: not survey_public_ip
 
     - name: Create virtual network interface card
       azure.azcollection.azure_rm_networkinterface:
