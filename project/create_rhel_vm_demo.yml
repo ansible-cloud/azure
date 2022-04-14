@@ -101,6 +101,7 @@
       awx.awx.inventory:
         name: RHEL
         description: RHEL VMs
+        organization: Default
         state: present
       when: survey_public_ip
       ignore_errors: true
@@ -109,6 +110,7 @@
       awx.awx.host:
         name: "{{ output_ip_address.state.ip_address }}"
         description: Ansible Test RHEL VM
+        organization: Default
         inventory: RHEL
         state: present
       when: survey_public_ip
