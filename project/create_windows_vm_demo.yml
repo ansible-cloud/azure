@@ -93,7 +93,7 @@
       ignore_errors: true
 
     - name: Add new host to inventory
-      ansible.controller.host:
+      awx.awx.host:
         name: "{{ output_ip_address.state.ip_address }}"
         description: Ansible Test RHEL VM
         inventory: Windows
