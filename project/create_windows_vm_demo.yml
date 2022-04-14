@@ -97,7 +97,6 @@
       awx.awx.host:
         name: "{{ output_ip_address.state.ip_address }}"
         description: Ansible Test RHEL VM
-        organization: Default
         inventory: Windows
         state: present
       when: survey_public_ip
