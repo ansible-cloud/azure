@@ -82,3 +82,21 @@
           publisher: MicrosoftWindowsServer
           sku: "{{ win_vm_sku }}"
           version: latest
+
+    - name: Create Windows Inventory
+      become: false
+      awx.awx.inventory:
+        name: Windows
+        description: Windows VMs
+        state: present
+      when: survey_public_ip
+      ignore_errors: true
+
+    - name: Add new host to inventory
+      ansible.controller.host:
+        name: "{{ output_ip_address.state.ip_address }}"
+        description: Ansible Test RHEL VM
+        inventory: Windows
+        state: present
+      when: survey_public_ip
+      ignore_errors: true
