@@ -261,6 +261,7 @@
         allow_forwarded_traffic: true
         allow_gateway_transit: true
         use_remote_gateways: true
+      when: managed_app_node_pool_rg != "" and managed_app_vnet_name != ""
       tags:
         - network
         - peering
