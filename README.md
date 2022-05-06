@@ -237,11 +237,11 @@ vm_size: "Standard_A1_v2"
 vm_username: azureuser
 ssh_pub_key: ""  # Add your RSA SSH public key here
 # Optional
-managed_app_node_pool_rg: ""  # Name of the managed app node pool resource group
-managed_app_vnet_name: ""  # Name of the managed app node pool vnet
-managed_app_cidr: ""  # CIDR of the managed app node pool vnet
-managed_app_route_table: ""  # The route table name for the managed app node pool vnet
-vpn_cidr: ""  # the CIDR range of your local VPN that could also be connected as a spoke to the newly created virtual gateway
+# managed_app_rg: ""  # Name of the managed app resource group
+# managed_app_vnet_name: ""  # Name of the managed app node pool vnet
+# # managed_app_cidr: "192.168.0.0/26"  # CIDR of the managed app node pool vnet
+# managed_app_route_table: ""  # The route table name for the managed app node pool vnet
+# vpn_cidr: ""  # the CIDR range of your local VPN that could also be connected as a spoke to the newly created hub vnet
 ```
 
 When ready, you may run the following command to begin the deployment.
@@ -250,11 +250,20 @@ When ready, you may run the following command to begin the deployment.
 ansible-navigator run project/peer_network_demo.yml \
 -i inventory/hosts \
 --pae false \
---extra-vars "@env/extravars-peering" \
 --mode stdout \
+--ee true \
+--ce docker \
 --eei quay.io/scottharwell/azure-execution-env:latest \
+--extra-vars "@env/peer_network_extravars" \
 --eev $HOME/.azure:/home/runner/.azure
 ```
+
+*Note*: Two steps that were at one point possible for Ansible to run are no longer possible: `Create route from managed app to spoke 1` and `Create route from managed app to spoke 2`.  Since the route table for the AKS cluster is within the MRG, it appears that API calls to make these changes are now blocked.  However, they can still be performed manually by doing the following:
+
+1. Navigate to `Route Tables` in the Azure console.
+2. Open the route table for the AKS cluster.
+3. Click on the `Routes` link on the left.
+4. Add a route for each of the spoke networks that AAP will need to connect to (including VPNs).  The hub network does not need a route since it is directly peered to the AKS VNET.
 
 ### Advanced Operations
 
