@@ -1,0 +1,58 @@
+---
+- name: Destroy network peering demo
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Remove route from managed app to spoke 1
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ node_pool_rg }}"
+        name: "spoke1-route"
+        route_table_name: "{{ managed_app_route_table }}"
+        state: absent
+      when: node_pool_rg is defined and managed_app_route_table is defined
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Remove route from managed app to spoke 2
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ node_pool_rg }}"
+        name: "spoke2-route"
+        route_table_name: "{{ managed_app_route_table }}"
+        state: absent
+      when: node_pool_rg is defined and managed_app_route_table is defined
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Remove route from managed app to vpn
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ managed_app_rg }}"
+        name: "vpn-route"
+        route_table_name: "{{ managed_app_route_table }}"
+        state: absent
+      when: managed_app_rg is defined and managed_app_route_table is defined
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Remove managed app peering
+      azure.azcollection.azure_rm_virtualnetworkpeering:
+        resource_group: "{{ managed_app_rg }}"
+        virtual_network: "{{ managed_app_vnet_name }}"
+        name: managedapp_TO_hub
+        state: absent
+      when: managed_app_rg is defined and managed_app_vnet_name is defined
+      tags:
+        - network
+        - peering
+    - name: Create Resource Group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "{{ resource_group_name }}"
+        location: "{{ region }}"
+        state: absent
+        tags:
+          deployment: ansible
+      tags:
+        - rg

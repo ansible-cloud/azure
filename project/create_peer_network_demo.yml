@@ -311,34 +311,30 @@
         - network
         - peering
         - routes
-    # Is possible through the Azure console, but plays throw permissions errors on this step now.
-    # Likely need to document for customers to request SREs to update in the future.
-    # - name: Create route from managed app to spoke 1
-    #   azure.azcollection.azure_rm_route:
-    #     resource_group: "{{ managed_app_rg }}"
-    #     name: "spoke1-route"
-    #     address_prefix: "{{ spoke1_vnet_cidr }}"
-    #     next_hop_type: virtual_network_gateway
-    #     route_table_name: "{{ managed_app_route_table }}"
-    #   when: managed_app_rg is defined and managed_app_cidr is defined and managed_app_route_table is defined
-    #   tags:
-    #     - network
-    #     - peering
-    #     - routes
-    # Is possible through the Azure console, but plays throw permissions errors on this step now.
-    # Likely need to document for customers to request SREs to update in the future.
-    # - name: Create route from managed app to spoke 2
-    #   azure.azcollection.azure_rm_route:
-    #     resource_group: "{{ managed_app_rg }}"
-    #     name: "spoke2-route"
-    #     address_prefix: "{{ spoke2_vnet_cidr }}"
-    #     next_hop_type: virtual_network_gateway
-    #     route_table_name: "{{ managed_app_route_table }}"
-    #   when: managed_app_rg is defined and managed_app_cidr is defined and managed_app_route_table is defined
-    #   tags:
-    #     - network
-    #     - peering
-    #     - routes
+    - name: Create route from managed app to spoke 1
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ node_pool_rg }}"
+        name: "spoke1-route"
+        address_prefix: "{{ spoke1_vnet_cidr }}"
+        next_hop_type: virtual_network_gateway
+        route_table_name: "{{ managed_app_route_table }}"
+      when: node_pool_rg is defined and spoke1_vnet_cidr is defined and managed_app_route_table is defined
+      tags:
+        - network
+        - peering
+        - routes
+    - name: Create route from managed app to spoke 2
+      azure.azcollection.azure_rm_route:
+        resource_group: "{{ node_pool_rg }}"
+        name: "spoke2-route"
+        address_prefix: "{{ spoke2_vnet_cidr }}"
+        next_hop_type: virtual_network_gateway
+        route_table_name: "{{ managed_app_route_table }}"
+      when: node_pool_rg is defined and spoke2_vnet_cidr is defined and managed_app_route_table is defined
+      tags:
+        - network
+        - peering
+        - routes
     - name: Create route from managed app to vpn
       azure.azcollection.azure_rm_route:
         resource_group: "{{ managed_app_rg }}"

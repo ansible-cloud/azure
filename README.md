@@ -187,7 +187,7 @@ Many customers using Ansible on Azure will want to use a hub-and-spoke networkin
 
 In the image above, Ansible Automation Platform would sit on one of the spoke VNETs.
 
-The `peer_network_demo.yml` playbook creates a demo deployment of this type of network configuration.  It is intended to be an example for routing traffic using the hub-and-spoke model implemented in the same fashion as the diagram above.  A production deployment would likely be much more complex and unique per the requirements of your organization; the variables in this playbook are for example only.
+The `create_peer_network_demo.yml` playbook creates a demo deployment of this type of network configuration.  It is intended to be an example for routing traffic using the hub-and-spoke model implemented in the same fashion as the diagram above.  A production deployment would likely be much more complex and unique per the requirements of your organization; the variables in this playbook are for example only.
 
 ### Basic Operations
 
@@ -237,6 +237,7 @@ vm_size: "Standard_A1_v2"
 vm_username: azureuser
 ssh_pub_key: ""  # Add your RSA SSH public key here
 # Optional
+# node_pool_rg: ""  # Name of the node pool resource group that contains the route table for the AKS cluster
 # managed_app_rg: ""  # Name of the managed app resource group
 # managed_app_vnet_name: ""  # Name of the managed app node pool vnet
 # # managed_app_cidr: "192.168.0.0/26"  # CIDR of the managed app node pool vnet
@@ -258,13 +259,6 @@ ansible-navigator run project/peer_network_demo.yml \
 --eev $HOME/.azure:/home/runner/.azure
 ```
 
-*Note*: Two steps that were at one point possible for Ansible to run are no longer possible: `Create route from managed app to spoke 1` and `Create route from managed app to spoke 2`.  Since the route table for the AKS cluster is within the MRG, it appears that API calls to make these changes are now blocked.  However, they can still be performed manually by doing the following:
-
-1. Navigate to `Route Tables` in the Azure console.
-2. Open the route table for the AKS cluster.
-3. Click on the `Routes` link on the left.
-4. Add a route for each of the spoke networks that AAP will need to connect to (including VPNs).  The hub network does not need a route since it is directly peered to the AKS VNET.
-
 ### Advanced Operations
 
 #### VPN Setup
@@ -285,3 +279,7 @@ To remove the resources created in the `peer_network_demo.yml` playbook, you can
     * spoke1-route
     * spoke2-route
     * vpn-route (if it was configured)
+
+### Destroying the Peering Demo
+
+The peered network demo puts all resources into a single resource group for easy removal.  However, the AKS route table will have hanging configuration if just the resource group is deleted.  The `destroy_peer_network_demo.yml` will remove the hanging resources in the node pool resource group and any resources in the resource group created for the demo.
