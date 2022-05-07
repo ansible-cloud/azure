@@ -253,7 +253,6 @@ ansible-navigator run project/peer_network_demo.yml \
 --pae false \
 --mode stdout \
 --ee true \
---ce docker \
 --eei quay.io/scottharwell/azure-execution-env:latest \
 --extra-vars "@env/peer_network_extravars" \
 --eev $HOME/.azure:/home/runner/.azure
