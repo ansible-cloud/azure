@@ -27,16 +27,19 @@
         allocation_method: Static
         name: "{{ win_public_ip_name }}"
       register: output_ip_address
+      when: survey_public_ip
 
     - name: Dump public IP for VM which will be created
       debug:
         msg: "The public IP is {{ output_ip_address.state.ip_address }}"
+      when: survey_public_ip
 
     - name: Set Stat for Ansible Controller
       set_stats:
-        data: 
+        data:
           azure_vm_public_ip: "{{ output_ip_address.state.ip_address }}"
         per_host: false
+      when: survey_public_ip
 
     - name: Create Network Security Group that allows SSH and RDP
       azure_rm_securitygroup:
@@ -79,3 +82,22 @@
           publisher: MicrosoftWindowsServer
           sku: "{{ win_vm_sku }}"
           version: latest
+
+    - name: Create Windows Inventory
+      become: false
+      awx.awx.inventory:
+        name: Windows
+        description: Windows VMs
+        organization: Default
+        state: present
+      when: survey_public_ip
+      ignore_errors: true
+
+    - name: Add new host to inventory
+      awx.awx.host:
+        name: "{{ output_ip_address.state.ip_address }}"
+        description: Ansible Test RHEL VM
+        inventory: Windows
+        state: present
+      when: survey_public_ip
+      ignore_errors: true

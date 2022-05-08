@@ -1,0 +1,12 @@
+---
+name: validation-checks
+"on": [push]
+jobs:
+  lint-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check out yamllint
+        uses: actions/checkout@1.0.0
+      - name: Run yamllint
+        uses: actionshub/yamllint@1.0.0
