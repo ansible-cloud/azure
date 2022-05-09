@@ -47,11 +47,12 @@
       tags:
         - network
         - peering
-    - name: Create Resource Group
+    - name: Delete Resource Group
       azure.azcollection.azure_rm_resourcegroup:
         name: "{{ resource_group_name }}"
         location: "{{ region }}"
         state: absent
+        force_delete_nonempty: true
         tags:
           deployment: ansible
       tags:
