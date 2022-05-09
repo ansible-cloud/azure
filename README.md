@@ -210,6 +210,7 @@ Once the playbook completes, you should be able to SSH into the public VM and ro
 The following are required extra-vars needed to run the playbook.  Similar to the previous examples, you should create an extra-vars file in the `env` folder to store them.  You may create a file with a separate name, like `env/extravars-peering` to maintain both sets of variables.
 
 ```yaml
+---
 # Required
 debug: false
 resource_group_name: rg-peering-demo
