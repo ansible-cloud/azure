@@ -241,7 +241,7 @@ ssh_pub_key: ""  # Add your RSA SSH public key here
 # node_pool_rg: ""  # Name of the node pool resource group that contains the route table for the AKS cluster
 # managed_app_rg: ""  # Name of the managed app resource group
 # managed_app_vnet_name: ""  # Name of the managed app node pool vnet
-# # managed_app_cidr: "192.168.0.0/26"  # CIDR of the managed app node pool vnet
+# managed_app_cidr: "192.168.0.0/26"  # CIDR of the managed app node pool vnet
 # managed_app_route_table: ""  # The route table name for the managed app node pool vnet
 # vpn_cidr: ""  # the CIDR range of your local VPN that could also be connected as a spoke to the newly created hub vnet
 ```
@@ -269,17 +269,6 @@ This networking configuration sets up most of the Azure requirements to add an e
 
 If you have Ansible Automation Platform on Azure installed as a managed application, then configuring the optional `managed_app_*` values above with will configure routing options between the previously created resources and your AAP deployment.  This will update the routing peering and routing table of the managed application to participate in the hub-and-spoke networking, and can be used to automate against hosts on the spoke networks configured in the route table, including on-premises networks or other clouds.
 
-#### Removing the Network Demo
-
-To remove the resources created in the `peer_network_demo.yml` playbook, you can delete the resource group either with the `destroy_resource_group.yml` playbook or with Azure tools.  That will destroy all of the resources created in this example.  However, if you peered Ansible Automation Platform on Azure with the network created in the demo, then the route rules that were added to the managed application route table need to be removed manually.
-
-1. Navigate to the route tables section in the Azure console
-2. Select the route table for the managed application
-3. Delete any route rule associated with the demo network
-    * spoke1-route
-    * spoke2-route
-    * vpn-route (if it was configured)
-
-### Destroying the Peering Demo
+### Removing the Peer Network Demo
 
 The peered network demo puts all resources into a single resource group for easy removal.  However, the AKS route table will have hanging configuration if just the resource group is deleted.  The `destroy_peer_network_demo.yml` will remove the hanging resources in the node pool resource group and any resources in the resource group created for the demo.
