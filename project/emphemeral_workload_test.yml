@@ -1,11 +1,6 @@
 ---
-# This playbook is intended to run on a daily schedule that
-# will create a RHEL VM and then run a playbook in AAP Controller
-# to trigger an automation against it.  This will make it a managed
-# active node and should result in an Azure billing event.
-# The machine is then destroyed since it is no longer needed.
-# This demo has no purpose other than for the Ansible on Azure
-# team to validate Azure metering APIs.
+# Demos creating a VM, launching an AAP job, and then destroying the VM.
+# This shows a basic example of an ephemeral workload on temporary VMs.
 - name: Create Azure VM
   hosts: localhost
   connection: local

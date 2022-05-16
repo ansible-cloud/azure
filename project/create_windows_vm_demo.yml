@@ -5,25 +5,25 @@
   tasks:
     - name: Create resource group
       azure_rm_resourcegroup:
-        name: "{{ resource_group_name }}"
+        name: "{{ resource_group_name | default('demo') }}"
         location: "{{ region }}"
 
     - name: Create virtual network
       azure_rm_virtualnetwork:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ vnet_name }}"
         address_prefixes: "{{ vnet_cidr }}"
 
     - name: Add subnet
       azure_rm_subnet:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ subnet_name }}"
         address_prefix: "{{ subnet_cidr }}"
         virtual_network: "{{ vnet_name }}"
 
     - name: Create public IP address
       azure_rm_publicipaddress:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         allocation_method: Static
         name: "{{ win_public_ip_name }}"
       register: output_ip_address
@@ -43,7 +43,7 @@
 
     - name: Create Network Security Group that allows SSH and RDP
       azure_rm_securitygroup:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ network_sec_group_name }}"
         rules:
           - name: SSH
@@ -61,7 +61,7 @@
 
     - name: Create virtual network interface card
       azure_rm_networkinterface:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ win_nic_name }}"
         virtual_network: "{{ vnet_name }}"
         subnet: "{{ subnet_name }}"
@@ -70,8 +70,8 @@
 
     - name: Create VM
       azure_rm_virtualmachine:
-        resource_group: "{{ resource_group_name }}"
-        name: "{{ win_vm_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
+        name: "{{ win_vm_name | default('demo_win_vm') }}"
         os_type: Windows
         vm_size: "{{ win_vm_size }}"
         admin_username: "{{ win_admin_user }}"
@@ -82,22 +82,6 @@
           publisher: MicrosoftWindowsServer
           sku: "{{ win_vm_sku }}"
           version: latest
-
-    - name: Create Windows Inventory
-      become: false
-      ansible.controller.inventory:
-        name: Windows
-        description: Windows VMs
-        organization: Default
-        state: present
-      when: survey_public_ip
-      ignore_errors: true
-
-    - name: Add new host to inventory
-      ansible.controller.host:
-        name: "{{ output_ip_address.state.ip_address }}"
-        description: Ansible Test Windows VM
-        inventory: Windows
-        state: present
-      when: survey_public_ip
-      ignore_errors: true
+        tags:
+          deployment: ansible
+          purpose: demo

@@ -6,25 +6,25 @@
   tasks:
     - name: Create resource group
       azure.azcollection.azure_rm_resourcegroup:
-        name: "{{ resource_group_name }}"
+        name: "{{ resource_group_name | default('demo') }}"
         location: "{{ region }}"
 
     - name: Create virtual network
       azure.azcollection.azure_rm_virtualnetwork:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ vnet_name }}"
         address_prefixes: "{{ vnet_cidr }}"
 
     - name: Add subnet
       azure.azcollection.azure_rm_subnet:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ subnet_name }}"
         address_prefix: "{{ subnet_cidr }}"
         virtual_network: "{{ vnet_name }}"
 
     - name: Create public IP address
       azure.azcollection.azure_rm_publicipaddress:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         allocation_method: Static
         name: "{{ rhel_public_ip_name }}"
       register: output_ip_address
@@ -44,7 +44,7 @@
 
     - name: Create Network Security Group that allows SSH and RDP
       azure.azcollection.azure_rm_securitygroup:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ network_sec_group_name }}"
         rules:
           - name: SSH
@@ -60,18 +60,18 @@
             priority: 1002
             direction: Inbound
 
-    - name: Create virtual network interface card
+    - name: Create virtual network interface card with internal ip
       azure.azcollection.azure_rm_networkinterface:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ rhel_nic_name }}"
         virtual_network: "{{ vnet_name }}"
         subnet: "{{ subnet_name }}"
         security_group: "{{ network_sec_group_name }}"
       when: not survey_public_ip
 
-    - name: Create virtual network interface card
+    - name: Create virtual network interface card with external ip
       azure.azcollection.azure_rm_networkinterface:
-        resource_group: "{{ resource_group_name }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
         name: "{{ rhel_nic_name }}"
         virtual_network: "{{ vnet_name }}"
         subnet: "{{ subnet_name }}"
@@ -81,9 +81,10 @@
 
     - name: Create VM
       azure.azcollection.azure_rm_virtualmachine:
-        resource_group: "{{ resource_group_name }}"
-        name: "{{ rhel_vm_name }}"
-        vm_size: "{{ rhel_vm_size }}"
+        resource_group: "{{ resource_group_name | default('demo') }}"
+        name: "{{ rhel_vm_name | default('demo_rhel_vm') }}"
+        vm_size: "{{ vm_size | default('Standard_DS2_v2') }}"
+        managed_disk_type: "{{ disk_type | default('Standard_LRS') }}"
         admin_username: "{{ rhel_admin_user }}"
         ssh_password_enabled: false
         ssh_public_keys:
@@ -93,24 +94,10 @@
         image:
           offer: RHEL
           publisher: RedHat
-          sku: "{{ rhel_vm_sku }}"
+          sku: "{{ rhel_vm_sku | default('8_5') }}"
           version: latest
-      register: vm
-
-    - name: Add RHEL inventory
-      ansible.controller.inventory:
-        name: RHEL
-        description: RHEL VMs
-        organization: Default
-        state: present
-      when: survey_public_ip
-      ignore_errors: true
-
-    - name: Add new host to inventory
-      ansible.controller.host:
-        name: "{{ output_ip_address.state.ip_address }}"
-        description: Ansible Test RHEL VM
-        inventory: RHEL
-        state: present
-      when: survey_public_ip
-      ignore_errors: true
+        max_price: "{{ rhel_max_price | default(-1) }}"
+        priority: "{{ rhel_priority | default('Spot') }}"
+        tags:
+          deployment: ansible
+          purpose: demo

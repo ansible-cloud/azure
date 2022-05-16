@@ -4,3 +4,4 @@ azure/*
 env
 artifacts
 *.log
+Pipfile*
