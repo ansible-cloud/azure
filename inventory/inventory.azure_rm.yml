@@ -18,6 +18,8 @@ keyed_groups:
     key: tags
   - prefix: azure_loc
     key: location
+  - prefix: offer
+    key: offer
 
 exclude_host_filters:
   # excludes hosts that are powered off
