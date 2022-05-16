@@ -96,7 +96,7 @@
     - name: Add new host to inventory
       ansible.controller.host:
         name: "{{ output_ip_address.state.ip_address }}"
-        description: Ansible Test RHEL VM
+        description: Ansible Test Windows VM
         inventory: Windows
         state: present
       when: survey_public_ip
