@@ -1,0 +1,115 @@
+---
+# Demos creating a VM, launching an AAP job, and then destroying the VM.
+# This shows a basic example of an ephemeral workload on temporary VMs.
+- name: Create Azure VM
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Create random name for VM
+      set_fact:
+        vm_name: "vm-daily-{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=6') }}"
+      when: vm_name is not defined
+      tags:
+        - azure
+        - create_vm
+
+    - name: Debug VM name
+      debug:
+        msg: "VM Name: {{ vm_name }}"
+      tags:
+        - azure
+        - create_vm
+
+    - name: Set VM Stats
+      set_stats:
+        data:
+          vm_name: "{{ vm_name }}"
+      tags:
+        - azure
+        - create_vm
+
+    - name: Create Network Security Group
+      azure.azcollection.azure_rm_securitygroup:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ vm_name }}-security-group"
+        rules:
+          - name: SSH
+            protocol: Tcp
+            destination_port_range: 22
+            access: Allow
+            priority: 1001
+            direction: Inbound
+      register: security_group
+      tags:
+        - azure
+        - create_vm
+
+    - name: Create virtual network interface card
+      azure.azcollection.azure_rm_networkinterface:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ vm_name }}-nic"
+        virtual_network: "{{ vnet_name }}"
+        subnet: "{{ subnet_name }}"
+        security_group: "{{ security_group.state.name }}"
+      register: nic
+      tags:
+        - azure
+        - create_vm
+
+    - name: Create VM
+      azure.azcollection.azure_rm_virtualmachine:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ vm_name }}"
+        vm_size: "{{ vm_size | default('Standard_DS2_v2') }}"
+        managed_disk_type: "{{ disk_type | default('Standard_LRS') }}"
+        admin_username: "{{ admin_user | default('azureuser') }}"
+        ssh_password_enabled: false
+        ssh_public_keys:
+          - path: "/home/{{ admin_user | default('azureuser') }}/.ssh/authorized_keys"
+            key_data: "{{ public_key }}"
+        network_interfaces: "{{ nic.state.name }}"
+        image:
+          offer: RHEL
+          publisher: RedHat
+          sku: "{{ vm_sku | default('8_5') }}"
+          version: latest
+        max_price: "{{ max_price | default(-1) }}"
+        priority: "{{ priority | default('Spot') }}"
+      register: vm
+      tags:
+        - azure
+        - create_vm
+
+    - name: Launch job
+      awx.awx.job_launch:
+        job_template: "{{ job_template }}"
+        wait: true
+      register: job
+      tags:
+        - controller
+
+    - name: Set Job Stats
+      set_stats:
+        data:
+          job_status: "{{ job.status }}"
+      tags:
+        - controller
+
+    - name: Delete VM
+      azure.azcollection.azure_rm_virtualmachine:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ vm_name }}"
+        state: absent
+      tags:
+        - azure
+        - delete_vm
+
+    - name: Delete Network Security Group
+      azure.azcollection.azure_rm_securitygroup:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ vm_name }}-security-group"
+        state: absent
+      tags:
+        - azure
+        - delete_vm
