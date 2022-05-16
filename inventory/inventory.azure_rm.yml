@@ -10,8 +10,8 @@ conditional_groups:
   rhel_hosts: "'rhel' in name"
   windows_hosts: "'windows' in name"
 
-hostnames:
-  - tags.vm_name
+# hostnames:
+#   - tags.vm_name
 
 keyed_groups:
   - prefix: tag
