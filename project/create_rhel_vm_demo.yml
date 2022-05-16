@@ -98,7 +98,7 @@
       register: vm
 
     - name: Add RHEL inventory
-      awx.awx.inventory:
+      ansible.controller.inventory:
         name: RHEL
         description: RHEL VMs
         organization: Default
@@ -107,7 +107,7 @@
       ignore_errors: true
 
     - name: Add new host to inventory
-      awx.awx.host:
+      ansible.controller.host:
         name: "{{ output_ip_address.state.ip_address }}"
         description: Ansible Test RHEL VM
         inventory: RHEL

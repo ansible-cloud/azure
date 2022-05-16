@@ -85,7 +85,7 @@
 
     - name: Create Windows Inventory
       become: false
-      awx.awx.inventory:
+      ansible.controller.inventory:
         name: Windows
         description: Windows VMs
         organization: Default
@@ -94,7 +94,7 @@
       ignore_errors: true
 
     - name: Add new host to inventory
-      awx.awx.host:
+      ansible.controller.host:
         name: "{{ output_ip_address.state.ip_address }}"
         description: Ansible Test RHEL VM
         inventory: Windows
